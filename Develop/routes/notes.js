@@ -1,28 +1,46 @@
 const addRouter = require('express').Router();
 const fs = require("fs");
 let db = require("../db/db.json");
+
+function genId (){
+    return Math.random().toString(16).slice(2);
+}
+
 addRouter.get("/", (req, res) => {
-    const { title, text } = req.body;
-    const read = {
-        title: title,
-        text: text
-    }
-    fs.readFile("./db/db.json", "utf8", (data) => {
+    fs.readFile("./db/db.json", "utf8", (err,data) => {
+        if (err){
+            res.json({error:err})
+        }else{
+            res.json(JSON.parse(data))
+        }
         console.log(data);
+    
     })
-    db.push(read);
 })
 
 addRouter.post("/", (req, res) => {
     const { title, text } = req.body;
     const add = {
         title: title,
-        text: text
+        text: text,
+        id: genId()
     }
-    fs.writeFile("./db/db.json", (data) => {
-        console.log(data);
+    fs.readFile("./db/db.json", "utf8", (err,data) => {
+        if (err){
+            res.json({error:err})
+        }else{
+         let tempData = JSON.parse(data)
+         tempData.push(add)
+         fs.writeFile("./db/db.json", JSON.stringify(tempData), (err, data) => {
+            if (err){
+                res.json({error:err})
+            }else{
+                res.json(add)
+            }
+            console.log(data);
+        })
+        } 
     })
-    db.push(add);
 })
 
 module.exports = addRouter
